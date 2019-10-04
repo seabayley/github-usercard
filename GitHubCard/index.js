@@ -23,8 +23,28 @@
           Using that array, iterate over it, requesting data for each user, creating a new card for each
           user, and adding that card to the DOM.
 */
+axios.get('https://api.github.com/users/seabayley')
+  .then(response => {
+    document.querySelector('.cards').appendChild(createCard(response.data));
+  })
 
-const followersArray = [];
+  .catch(err => {
+    console.log(err);
+  })
+
+
+const followersArray = ['tetondan', 'dustinmyers', 'justsml', 'luishrd', 'bigknell'];
+
+followersArray.forEach(userName => {
+  axios.get(`https://api.github.com/users/${userName}`)
+    .then(response => {
+      document.querySelector('.cards').appendChild(createCard(response.data));
+    })
+
+    .catch(err => {
+      console.log(err);
+    })
+})
 
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
@@ -35,7 +55,7 @@ const followersArray = [];
     <h3 class="name">{users name}</h3>
     <p class="username">{users user name}</p>
     <p>Location: {users location}</p>
-    <p>Profile:  
+    <p>Profile:
       <a href={address to users github page}>{address to users github page}</a>
     </p>
     <p>Followers: {users followers count}</p>
@@ -46,10 +66,63 @@ const followersArray = [];
 
 */
 
-/* List of LS Instructors Github username's: 
+/* List of LS Instructors Github username's:
   tetondan
   dustinmyers
   justsml
   luishrd
   bigknell
 */
+
+
+function createElementWithProps(elemType = 'div', classes, ...properties) {
+  let elem = document.createElement(elemType);
+
+  if (typeof (classes) === 'string') {
+    elem.classList.add(classes);
+  }
+  else if (typeof (classes) === 'array') {
+    classes.forEach(c => {
+      elem.classList.add(c);
+    });
+  }
+  else if (classes == null) {
+  }
+  else {
+    throw "Invalid type passed.";
+  }
+
+  properties.forEach(prop => {
+    if (prop['img']) {
+      elem.src = prop['img'];
+    }
+    if (prop['href']) {
+      elem.href = prop['href'];
+    }
+    if (prop['text']) {
+      elem.textContent = prop['text'];
+    }
+  })
+
+  return elem;
+}
+
+function createCard(userData) {
+  let
+    cardWrapper = createElementWithProps('div', 'card'),
+    imgSrc = createElementWithProps('img', null, { 'img': userData.avatar_url }),
+    cardInfo = createElementWithProps('div', 'card-info'),
+    name = createElementWithProps('h3', 'name', { 'text': userData.name }),
+    userName = createElementWithProps('p', 'username', { 'text': userData.login }),
+    locInfo = createElementWithProps('p', null, { 'text': ("Location: " + userData.location) }),
+    proInfo = createElementWithProps('p'),
+    aLink = createElementWithProps('a', null, { 'href': userData.url }, { 'text': userData.url }),
+    followers = createElementWithProps('p', null, { 'text': ("Followers: " + userData.followers) }),
+    following = createElementWithProps('p', null, { 'text': ("Following: " + userData.following) }),
+    bioInfo = createElementWithProps('p', null, { 'text': ("Bio " + userData.bio) });
+
+  proInfo.appendChild(aLink);
+  cardInfo.append(name, userName, locInfo, proInfo, followers, following, bioInfo);
+  cardWrapper.append(imgSrc, cardInfo);
+  return cardWrapper;
+}
